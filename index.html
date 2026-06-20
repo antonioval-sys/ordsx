@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contador YouTube</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Segoe UI,sans-serif;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    background:linear-gradient(
+        135deg,
+        #1a1a1a 0%,
+        #1f2937 30%,
+        #1e3a8a 65%,
+        #4c1d95 100%
+    );
+}
+
+.counter-container{
+    background:#1e1e1e;
+    padding:40px;
+    border-radius:20px;
+    text-align:center;
+    border-top:5px solid #4f6fdb;
+    box-shadow:0 0 30px rgba(0,0,0,.5);
+    width:450px;
+}
+
+#avatar{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    object-fit:cover;
+    border:4px solid #1a91d6;
+    margin-bottom:15px;
+}
+
+#name{
+    margin-top:15px;
+    font-size:28px;
+    font-weight:bold;
+}
+
+#count{
+    margin-top:20px;
+    font-size:90px;
+    font-weight:bold;
+    color:white;
+    text-shadow:
+        0 0 10px #661562,
+        0 0 20px #7b1b88,
+        0 0 40px #d137df;
+}
+
+.status{
+    margin-top:10px;
+    color:#888;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+
+#metaTexto{
+    margin-top:25px;
+    margin-bottom:12px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.barra-fondo{
+    width:100%;
+    height:25px;
+    background:#333;
+    border-radius:30px;
+    overflow:hidden;
+}
+
+.barra-progreso{
+    width:0%;
+    height:100%;
+    border-radius:30px;
+    background:linear-gradient(90deg,#1a91d6,#d137df);
+    transition:width .5s ease;
+}
+</style>
+</head>
+
+<body>
+
+<div class="counter-container">
+
+    <img id="avatar">
+
+    <div id="name">Cargando...</div>
+
+    <div id="count">0</div>
+
+    <div class="status">
+        Suscriptores en tiempo real
+    </div>
+
+    <div id="metaTexto">
+        0 / 100 (0%)
+    </div>
+
+    <div class="barra-fondo">
+        <div class="barra-progreso" id="barraProgreso"></div>
+    </div>
+
+</div>
+
+<script>
+
+const canal = "UCQyC08c1IFoWwdmrBqDj_HA";
+
+async function cargarAvatar(){
+
+    const html = await fetch(
+        `https://mixerno.space/embed-pfp/youtube-channel-counter/${canal}`
+    ).then(r => r.text());
+
+    const doc = new DOMParser().parseFromString(html,"text/html");
+
+    const img = doc.querySelector("img");
+
+    if(img){
+        document.getElementById("avatar").src = img.src;
+    }
+}
+
+async function cargarNombre(){
+
+    const html = await fetch(
+        `https://mixerno.space/embed-name/youtube-channel-counter/${canal}`
+    ).then(r => r.text());
+
+    const doc = new DOMParser().parseFromString(html,"text/html");
+
+    document.getElementById("name").innerText =
+        doc.body.innerText.trim();
+}
+
+async function cargarContador(){
+
+    const html = await fetch(
+        `https://mixerno.space/embed-count/youtube-channel-counter/${canal}`
+    ).then(r => r.text());
+
+    const doc = new DOMParser().parseFromString(html,"text/html");
+
+    const numero = doc.querySelector("#subscribers");
+
+    if(numero){
+
+        const subsTexto = numero.textContent.trim();
+
+        document.getElementById("count").innerText = subsTexto;
+
+        const subs = parseInt(subsTexto.replace(/,/g,""));
+
+        let meta;
+
+        if(subs < 100){
+            meta = 100;
+        }
+        else if(subs < 500){
+            meta = 500;
+        }
+        else if(subs < 1000){
+            meta = 1000;
+        }
+        else if(subs < 5000){
+            meta = 5000;
+        }
+        else if(subs < 10000){
+            meta = 10000;
+        }
+        else if(subs < 50000){
+            meta = 50000;
+        }
+        else if(subs < 100000){
+            meta = 100000;
+        }
+        else{
+            meta = Math.ceil(subs / 100000) * 100000;
+        }
+
+        const porcentaje = (subs / meta) * 100;
+
+        document.getElementById("barraProgreso").style.width =
+            porcentaje + "%";
+
+        document.getElementById("metaTexto").innerText =
+            `${subs.toLocaleString()} / ${meta.toLocaleString()} (${porcentaje.toFixed(1)}%)`;
+    }
+}
+
+async function actualizar(){
+
+    await cargarAvatar();
+    await cargarNombre();
+    await cargarContador();
+
+}
+
+actualizar();
+
+setInterval(cargarContador,2000);
+
+</script>
+
+</body>
+</html>
